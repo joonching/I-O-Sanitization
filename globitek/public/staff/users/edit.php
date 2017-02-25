@@ -20,11 +20,11 @@ if(is_post_request()) {
   if(isset($_POST['email'])) { $user['email'] = $_POST['email']; }
 
 
-  $result = update_user($user);
-  if($result === true) {
+  $status = update_user($user);
+  if($status === true) {
     redirect_to('show.php?id=' . $user['id']);
   } else {
-    $errors = $result;
+    $errors = $status;
   }
 }
 ?>

@@ -24,12 +24,12 @@ if (is_post_request()) {
 	if (isset($_POST['email'])) {
 		$salesperson['email'] = $_POST['email'];
 	}
-	$result = update_salesperson($salesperson);
-	if ($result === true) {
+	$status = update_salesperson($salesperson);
+	if ($status === true) {
 		redirect_to('show.php?id=' . $salesperson['id']);
 	}
 	else {
-		$errors = $result;
+		$errors = $status;
 	}
 }
 ?>

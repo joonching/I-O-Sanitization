@@ -45,8 +45,24 @@
   }
 
   function validate_state($state, $errors=array()) {
-    // TODO add validations
-
+     if (is_blank($state['name'])) {
+      $errors[] = "Name cannot be blank.";
+    }
+    elseif (!has_length($state['name'], array('min' => 2, 'max' => 255))) {
+      $errors[] = "Name must be between 2 and 255 characters.";
+    }
+    if (is_blank($state['code'])) {
+      $errors[] = "Code cannot be blank.";
+    }
+    elseif (!has_length($state['code'], array('min' => 1, 'max' => 10))) {
+      $errors[] = "Code must be between 1 and 10 characters.";
+    }
+    if (is_blank($state['country_id'])) {
+      $errors[] = "Country ID cannot be blank.";
+    }
+    elseif (!ctype_digit($state['country_id'])) {
+      $errors[] = "Country ID only contain digits.";
+    }
     return $errors;
   }
 
@@ -60,8 +76,12 @@
       return $errors;
     }
 
-    $sql = ""; // TODO add SQL
-    // For INSERT statments, $result is just true/false
+    $sql = "INSERT INTO states ";
+    $sql .= "(name, code, country_id) ";
+    $sql .= "VALUES (";
+    $sql .= "'" . insert_sanitzation($db, h($state['name'])) . "',";
+    $sql .= "'" . insert_sanitzation($db, h($state['code'])) . "',";
+    $sql .= "'" . insert_sanitzation($db, h($state['country_id'])) . "');";
     $result = db_query($db, $sql);
     if($result) {
       return true;
@@ -84,7 +104,12 @@
       return $errors;
     }
 
-    $sql = ""; // TODO add SQL
+    $sql = "UPDATE states SET ";
+    $sql .= "name='" . insert_sanitzation($db, h($state['name'])) . "', ";
+    $sql .= "code='" . insert_sanitzation($db, h($state['code'])) . "', ";
+    $sql .= "country_id='" . insert_sanitzation($db, h($state['country_id'])) . "' ";
+    $sql .= "WHERE id='" . insert_sanitzation($db, h($state['id'])) . "' ";
+    $sql .= "LIMIT 1;";
     // For update_state statments, $result is just true/false
     $result = db_query($db, $sql);
     if($result) {
@@ -131,7 +156,31 @@
   }
 
   function validate_territory($territory, $errors=array()) {
-    // TODO add validations
+     if (is_blank($territory['name'])) {
+      $errors[] = "Name cannot be blank.";
+    }
+    elseif (!has_length($territory['name'], array('min' => 2, 'max' => 255))) {
+      $errors[] = "Name must be between 2 and 255 characters.";
+    }
+    if (is_blank($territory['state_id'])) {
+      $errors[] = "State ID cannot be blank";
+    }
+    elseif (!ctype_digit($territory['state_id'])) {
+      $errors[] = "State ID can only contain digits.";
+    }
+    else {
+      $_sid = find_state_by_id($territory['state_id']);
+      $is_state = db_fetch_assoc($_sid);
+      if (!$is_state) {
+        $errors[] = "The provided state ID does not match any existing states.";
+      }
+    }
+    if (is_blank($territory['position'])) {
+      $errors[] = "Position cannot be blank.";
+    }
+    elseif (!ctype_digit($territory['position'])) {
+      $errors[] = "Position can only contain digits.";
+    }
 
     return $errors;
   }
@@ -146,8 +195,12 @@
       return $errors;
     }
 
-    $sql = ""; // TODO add SQL
-    // For INSERT statments, $result is just true/false
+    $sql = "INSERT INTO territories ";
+    $sql .= "(name, state_id, position) ";
+    $sql .= "VALUES (";
+    $sql .= "'" . insert_sanitzation($db, h($territory['name'])) . "', ";
+    $sql .= "'" . insert_sanitzation($db, h($territory['state_id'])) . "', ";
+    $sql .= "'" . insert_sanitzation($db, h($territory['position'])) . "')";
     $result = db_query($db, $sql);
     if($result) {
       return true;
@@ -170,7 +223,12 @@
       return $errors;
     }
 
-    $sql = ""; // TODO add SQL
+     $sql = "UPDATE territories SET ";
+    $sql .= "name='" . insert_sanitzation($db, h($territory['name'])) . "', ";
+    $sql .= "state_id='" . insert_sanitzation($db, h($territory['state_id'])) . "', ";
+    $sql .= "position='" . insert_sanitzation($db, h($territory['position'])) . "' ";
+    $sql .= "WHERE id='" . insert_sanitzation($db, h($territory['id'])) . "' ";
+    $sql .= "LIMIT 1;";
     // For update_territory statments, $result is just true/false
     $result = db_query($db, $sql);
     if($result) {
@@ -221,7 +279,30 @@
   }
 
   function validate_salesperson($salesperson, $errors=array()) {
-    // TODO add validations
+    if (is_blank($salesperson['first_name'])) {
+      $errors[] = "First name cannot be blank.";
+    }
+    elseif (!has_length($salesperson['first_name'], array('min' => 2, 'max' => 255))) {
+      $errors[] = "First name must be between 2 and 255 characters.";
+    }
+    if (is_blank($salesperson['last_name'])) {
+      $errors[] = "Last name cannot be blank.";
+    }
+    elseif (!has_length($salesperson['last_name'], array('min' => 2, 'max' => 255))) {
+      $errors[] = "Last name must be between 2 and 255 characters.";
+    }
+    if (is_blank($salesperson['phone'])) {
+      $errors[] = "Phone number cannot be blank.";
+    }
+    elseif (!ctype_digit($salesperson['phone'])) {
+      $errors[] = "Phone number can only contain digits.";
+    }
+    if (is_blank($salesperson['email'])) {
+      $errors[] = "Email cannot be blank.";
+    }
+    elseif (!has_valid_email_format($salesperson['email'])) {
+      $errors[] = "Email must be a valid format.";
+    }
 
     return $errors;
   }
@@ -236,8 +317,13 @@
       return $errors;
     }
 
-    $sql = ""; // TODO add SQL
-    // For INSERT statments, $result is just true/false
+    $sql = "INSERT INTO salespeople ";
+    $sql .= "(first_name, last_name, phone, email) ";
+    $sql .= "VALUES(";
+    $sql .= "'" . insert_sanitzation($db, h($salesperson['first_name'])) . "',";
+    $sql .= "'" . insert_sanitzation($db, h($salesperson['last_name'])) . "',";
+    $sql .= "'" . insert_sanitzation($db, h($salesperson['phone'])) . "',";
+    $sql .= "'" . insert_sanitzation($db, h($salesperson['email'])) . "');";
     $result = db_query($db, $sql);
     if($result) {
       return true;
@@ -260,7 +346,14 @@
       return $errors;
     }
 
-    $sql = ""; // TODO add SQL
+    $sql = "";
+    $sql = "UPDATE salespeople SET ";
+    $sql .= "first_name='" . insert_sanitzation($db, h($salesperson['first_name'])) . "', ";
+    $sql .= "last_name='" . insert_sanitzation($db, h($salesperson['last_name'])) . "', ";
+    $sql .= "phone='" . insert_sanitzation($db, h($salesperson['phone'])) . "', ";
+    $sql .= "email='" . insert_sanitzation($db, h($salesperson['email'])) . "' ";
+    $sql .= "WHERE id='" . insert_sanitzation($db, h($salesperson['id'])) . "' ";
+    $sql .= "LIMIT 1;";
     // For update_salesperson statments, $result is just true/false
     $result = db_query($db, $sql);
     if($result) {
@@ -347,15 +440,15 @@
     }
 
     $created_at = date("Y-m-d H:i:s");
+ 
     $sql = "INSERT INTO users ";
     $sql .= "(first_name, last_name, email, username, created_at) ";
     $sql .= "VALUES (";
-    $sql .= "'" . $user['first_name'] . "',";
-    $sql .= "'" . $user['last_name'] . "',";
-    $sql .= "'" . $user['email'] . "',";
-    $sql .= "'" . $user['username'] . "',";
-    $sql .= "'" . $created_at . "',";
-    $sql .= ");";
+    $sql .= "'" . insert_sanitzation($db, h($user['first_name'])) . "',";
+    $sql .= "'" . insert_sanitzation($db, h($user['last_name'])) . "',";
+    $sql .= "'" . insert_sanitzation($db, h($user['email'])) . "',";
+    $sql .= "'" . insert_sanitzation($db, h($user['username'])) . "',";
+    $sql .= "'" . insert_sanitzation($db, h($created_at)) . "');";
     // For INSERT statments, $result is just true/false
     $result = db_query($db, $sql);
     if($result) {
@@ -380,11 +473,11 @@
     }
 
     $sql = "UPDATE users SET ";
-    $sql .= "first_name='" . $user['first_name'] . "', ";
-    $sql .= "last_name='" . $user['last_name'] . "', ";
-    $sql .= "email='" . $user['email'] . "', ";
-    $sql .= "username='" . $user['username'] . "' ";
-    $sql .= "WHERE id='" . $user['id'] . "' ";
+    $sql .= "first_name='" . insert_sanitzation($db, h($user['first_name'])) . "', ";
+    $sql .= "last_name='" . insert_sanitzation($db, h($user['last_name'])) . "', ";
+    $sql .= "email='" . insert_sanitzation($db, h($user['last_name'])) . "', ";
+    $sql .= "username='" . insert_sanitzation($db, h($user['username'])) . "' ";
+    $sql .= "WHERE id='" . insert_sanitzation($db, h($user['id'])) . "' ";
     $sql .= "LIMIT 1;";
     // For update_user statments, $result is just true/false
     $result = db_query($db, $sql);

@@ -21,6 +21,13 @@
     return $_SERVER['REQUEST_METHOD'] == 'POST';
   }
 
+
+  function insert_sanitzation($db, $value) {
+    $value = mysqli_real_escape_string($db, $value);
+    $value = stripslashes($value);
+    return $value;
+  }
+
   function display_errors($errors=array()) {
     $output = '';
     if (!empty($errors)) {
